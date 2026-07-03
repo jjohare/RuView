@@ -1,7 +1,7 @@
 # ADR-008: Distributed Consensus for Multi-AP Coordination
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. No consensus algorithm (raft/paxos/byzantine) exists in the crates; multi-AP fusion is done at the feature level (ADR-012), not via this consensus protocol. Unfreeze requires an actual distributed-consensus layer.
 
 ## Date
 2026-02-28

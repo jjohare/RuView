@@ -1,7 +1,7 @@
 # ADR-003: RVF Cognitive Containers for CSI Data
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. No dedicated cognitive-container implementation exists. Unfreeze requires realising code.
 
 ## Date
 2026-02-28

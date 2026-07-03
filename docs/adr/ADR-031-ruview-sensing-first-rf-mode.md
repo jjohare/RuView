@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Accepted — Implemented (promoted from Proposed by closeout 2026-07-03; RuView fusion mode shipped, git 37b54d6) |
 | **Date** | 2026-03-02 |
 | **Deciders** | ruv |
 | **Codename** | **RuView** -- RuVector Viewpoint-Integrated Enhancement |

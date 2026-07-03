@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Partially Implemented (promoted from Proposed by closeout 2026-07-03; embedding/trainer scaffolding present in `wifi-densepose-sensing-server` + `wifi-densepose-train`; full contrastive-loss training path incomplete) |
 | **Date** | 2026-03-01 |
 | **Deciders** | ruv |
 | **Codename** | **AETHER** -- Ambient Electromagnetic Topology for Hierarchical Embedding and Recognition |

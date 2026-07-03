@@ -1,6 +1,6 @@
 # ADR-042: Coherent Human Channel Imaging (CHCI) — Beyond WiFi CSI
 
-**Status**: Proposed
+**Status**: Deferred — spec-only, frozen by closeout 2026-07-03. No CHCI-named implementation exists (0 source references to CHCI / coherent-channel-imaging in the crates). The wasm-edge modules added under commits e94c705/29b3e0a are ADR-041 exotic modules, not a CHCI protocol implementation. Unfreeze requires a real CHCI code path.
 **Date**: 2026-03-03
 **Deciders**: @ruvnet
 **Supersedes**: None

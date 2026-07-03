@@ -1073,13 +1073,15 @@ Domain model (Phase 1) includes:
 - `NetshBssidScanner`: Adapter parsing `netsh wlan show networks mode=bssid` output
 - `EnhancedSensingResult`: Pipeline output with motion, breathing, posture, quality metrics
 
-### Remaining: ADR-021 Dedicated Vital Sign Crate
+### Dedicated Vital Sign Crate (implemented — updated 2026-07-03 closeout)
 
-The `wifi-densepose-vitals` crate (ESP32 CSI-grade vital signs) has not yet been implemented. Required for:
-- Heart rate extraction from multi-subcarrier CSI phase coherence
-- Multi-person vital sign separation
-- SONA-based environment adaptation
-- VitalSignStore with tiered temporal compression
+The `wifi-densepose-vitals` crate now exists (~1,863 LOC): `breathing.rs`, `heartrate.rs`, `anomaly.rs`, `store.rs`, `preprocessor.rs`. The items previously listed here as missing are implemented:
+- Heart rate extraction from multi-subcarrier CSI phase coherence — `heartrate.rs`
+- Breathing detection — `breathing.rs`
+- Anomaly detection — `anomaly.rs`
+- `VitalSignStore` with tiered temporal compression — `store.rs`
+
+Remaining/verify: multi-person vital sign separation and SONA-based environment adaptation depth (confirm against crate coverage). Note: the neural/ML vital-signs path currently falls back to rule-based heuristics rather than a loaded model (see closeout simulation-first disclosure in the README).
 
 ## References
 

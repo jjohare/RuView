@@ -1,7 +1,7 @@
 # ADR-011: Python Proof-of-Reality and Mock Elimination
 
 ## Status
-Proposed (URGENT)
+Partially Implemented — closeout note 2026-07-03. The mock-elimination work this ADR mandates is not complete: `v1/src/testing/mock_csi_generator.py` and `mock_pose_generator.py` remain on the codebase and `ui/utils/mock-server.js` remains in the UI tree. The "proof-of-reality" positioning is therefore not yet earned. The Rust workspace runs on hardware-free *simulation* (honest, but not "zero mocks" — see the `MockBackend` inference harness in `wifi-densepose-nn`). Remaining work: quarantine `mock_*_generator.py` behind an explicit test-only feature flag and remove `mock-server.js` from the default UI path, or downgrade the ecosystem "proof-of-reality" claim to match. (Prior status: "Proposed (URGENT)".)
 
 ## Date
 2026-02-28

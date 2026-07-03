@@ -1,7 +1,7 @@
 # ADR-018: ESP32 Development Implementation Path
 
 ## Status
-Proposed
+Implemented (Partial) — promoted from Proposed by closeout 2026-07-03. The ESP-IDF firmware and UDP aggregator binary this ADR scheduled now exist in the repo (see updated Current State below); the remaining open item is the Python `_read_raw_data()` real UDP socket path.
 
 ## Date
 2026-02-28
@@ -25,13 +25,16 @@ This ADR answers *how* to build it — the concrete development sequence, the sp
 | CSI extractor (Python) | `v1/src/hardware/csi_extractor.py` | Stub — `_read_raw_data()` raises `NotImplementedError` |
 | Router interface (Python) | `v1/src/hardware/router_interface.py` | Stub — `_parse_csi_response()` raises `RouterConnectionError` |
 
-**Not yet implemented:**
+**Now implemented (updated 2026-07-03 closeout):**
 
-- ESP-IDF C firmware (`firmware/esp32-csi-node/`)
-- UDP aggregator binary (`crates/wifi-densepose-hardware/src/aggregator/`)
-- `CsiFrame` → `wifi_densepose_signal::CsiData` bridge
-- Python `_read_raw_data()` real UDP socket implementation
-- Proof capture tooling for real hardware
+- ESP-IDF C firmware — `firmware/esp32-csi-node/main/*.c` present (`main.c`, `csi_collector.c`, `edge_processing.c`, `ota_update.c`, `wasm_runtime.c`, `nvs_config.c`, …). Note: the firmware carries no automated test harness (functional verification pending).
+- UDP aggregator binary — `crates/wifi-densepose-hardware/src/aggregator/mod.rs` and `src/bin/aggregator.rs` present.
+
+**Still not implemented:**
+
+- Python `_read_raw_data()` real UDP socket implementation (`v1/src/hardware/csi_extractor.py` still raises `NotImplementedError`)
+- `CsiFrame` → `wifi_densepose_signal::CsiData` bridge (verify wiring)
+- Proof capture tooling for real hardware (no in-repo hardware-capture artifact — sensing currently runs simulation-only, see README)
 
 ### Binary Frame Format (implemented in `esp32_parser.rs`)
 

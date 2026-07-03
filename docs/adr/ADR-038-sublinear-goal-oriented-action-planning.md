@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Deferred — spec-only, frozen by closeout 2026-07-03 (GOAP roadmap optimiser; docs-only, git 66392cb, 0 source references) |
 | **Date** | 2026-03-02 |
 | **Deciders** | ruv |
 | **Relates to** | All 37 prior ADRs; ADR-014 (SOTA Signal Processing), ADR-016 (RuVector Integration), ADR-024 (AETHER Embeddings), ADR-027 (MERIDIAN Generalization), ADR-029 (RuvSense Multistatic), ADR-037 (Multi-Person Detection) |

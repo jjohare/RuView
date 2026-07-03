@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Accepted — Implemented (promoted from Proposed by closeout 2026-07-03; CRV 6-stage pipeline shipped, git 60e0e6d, `crates/wifi-densepose-ruvector/src/crv/`) |
 | **Date** | 2026-03-01 |
 | **Deciders** | ruv |
 | **Codename** | **CRV-Sense** -- Coordinate Remote Viewing Signal Line for WiFi Sensing |

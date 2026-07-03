@@ -4,6 +4,8 @@
 Superseded by [ADR-016](ADR-016-ruvector-integration.md) and [ADR-017](ADR-017-ruvector-signal-mat-integration.md)
 
 > **Note:** The vision in this ADR has been fully realized. ADR-016 integrates all 5 RuVector crates into the training pipeline. ADR-017 adds 7 signal + MAT integration points. The `wifi-densepose-ruvector` crate is [published on crates.io](https://crates.io/crates/wifi-densepose-ruvector). See also [ADR-027](ADR-027-cross-environment-domain-generalization.md) for how RuVector is extended with domain generalization.
+>
+> **Supersession verified (closeout 2026-07-03):** the successor pair ADR-016/017 fully absorb this ADR's integration-strategy scope — the realising `wifi-densepose-ruvector` crate is ~4,571 LOC and present. No decision from ADR-002 was dropped in the supersession; this ADR is retained for history only.
 
 ## Date
 2026-02-28

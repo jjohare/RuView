@@ -1,7 +1,7 @@
 # ADR-036: RVF Model Training Pipeline & UI Integration
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. The RVF training-pipeline UI is not implemented; this is a user-visible gap. Unfreeze requires realising code.
 
 ## Date
 2026-03-02

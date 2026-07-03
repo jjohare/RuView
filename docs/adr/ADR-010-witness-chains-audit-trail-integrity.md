@@ -1,7 +1,7 @@
 # ADR-010: Witness Chains for Audit Trail Integrity
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. No witness-chain / Merkle audit structure is implemented (only incidental mentions in `rvf_container.rs` and `ruvsense/cross_room.rs`). The ecosystem's provenance/audit-trail guarantee is aspirational until this lands.
 
 ## Date
 2026-02-28

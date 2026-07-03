@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Accepted — Implemented (promoted from Proposed by closeout 2026-07-03; `wifi-densepose-nn` crate + trained `.rvf` artifacts under `data/models/`) |
 | **Date** | 2026-02-28 |
 | **Deciders** | ruv |
 | **Relates to** | ADR-003 (RVF Cognitive Containers), ADR-005 (SONA Self-Learning), ADR-015 (Public Dataset Strategy), ADR-016 (RuVector Integration), ADR-017 (RuVector-Signal-MAT), ADR-020 (Rust AI Migration), ADR-021 (Vital Sign Detection) |

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Accepted — Implemented (promoted from Proposed by closeout 2026-07-03; RuvSense multistatic core shipped, git 37b54d6, `crates/wifi-densepose-signal/src/ruvsense/`) |
 | **Date** | 2026-03-02 |
 | **Deciders** | ruv |
 | **Codename** | **RuvSense** -- RuVector-Enhanced Sensing for Multistatic Fidelity |

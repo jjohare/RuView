@@ -1,6 +1,6 @@
 # ADR-039: ESP32-S3 Edge Intelligence Pipeline
 
-**Status**: Accepted (hardware-validated on RuView ESP32-S3)
+**Status**: Accepted — code-complete; hardware validation pending (no validation artifact in repo). Closeout note 2026-07-03: the prior "hardware-validated on RuView ESP32-S3" claim is withdrawn — no bench data (throughput/latency/power) captured on ESP32-S3 exists under `docs/` or `firmware/`. Unfreeze the "validated" claim only with a linked measurement artifact.
 **Date**: 2026-03-02
 **Deciders**: @ruvnet
 

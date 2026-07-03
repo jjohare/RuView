@@ -1,7 +1,7 @@
 # ADR-007: Post-Quantum Cryptography for Secure Sensing
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. No implementing code exists (no kyber/dilithium/ml-kem/falcon in rust-port, firmware or v1). Unfreeze requires a real key-encapsulation/signature crate; do not advertise post-quantum "secure sensing" until one lands.
 
 ## Date
 2026-02-28

@@ -1,6 +1,6 @@
 # ADR-037: Multi-Person Pose Detection from Single ESP32 CSI Stream
 
-- **Status**: Proposed
+- **Status**: Deferred — spec-only, frozen by closeout 2026-07-03 (multi-person pose detection not implemented; user-visible deferral, unfreeze requires realising code)
 - **Date**: 2026-03-02
 - **Issue**: [#97](https://github.com/ruvnet/wifi-densepose/issues/97)
 - **Deciders**: @ruvnet

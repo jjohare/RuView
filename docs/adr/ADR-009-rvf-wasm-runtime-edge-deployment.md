@@ -1,7 +1,7 @@
 # ADR-009: RVF WASM Runtime for Edge Deployment
 
 ## Status
-Proposed
+Deferred — spec-only, frozen by closeout 2026-07-03. Referenced in only one source file; no dedicated RVF WASM runtime implementation. Unfreeze requires realising code.
 
 ## Date
 2026-02-28

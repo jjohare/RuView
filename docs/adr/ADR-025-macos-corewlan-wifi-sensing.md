@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Proposed |
+| **Status** | Partially Implemented (promoted from Proposed by closeout 2026-07-03; `MacosCoreWlanScanner` adapter shipped in `wifi-densepose-wifiscan`) |
 | **Date** | 2026-03-01 |
 | **Deciders** | ruv |
 | **Codename** | **ORCA** — OS-native Radio Channel Acquisition |

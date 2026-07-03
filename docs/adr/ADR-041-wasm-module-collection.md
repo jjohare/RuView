@@ -1,6 +1,6 @@
 # ADR-041: WASM Module Collection -- Curated Sensing Algorithm Registry
 
-**Status**: Accepted (Phase 1 implemented, hardware-validated on RuView ESP32-S3)
+**Status**: Accepted — Phase 1 implemented; hardware validation pending (no validation artifact in repo). Closeout note 2026-07-03: the prior "hardware-validated on RuView ESP32-S3" claim is withdrawn — no in-repo bench data backs it. Unfreeze the "validated" claim only with a linked measurement artifact.
 **Date**: 2026-03-02
 **Deciders**: @ruvnet
 **Supersedes**: None
