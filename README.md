@@ -6,8 +6,8 @@ WiFi DensePose turns commodity WiFi signals into real-time human pose estimation
 
 [![Rust 1.85+](https://img.shields.io/badge/rust-1.85+-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 1300+](https://img.shields.io/badge/tests-1300%2B-brightgreen.svg)](https://github.com/ruvnet/wifi-densepose)
-[![Docker: 132 MB](https://img.shields.io/badge/docker-132%20MB-blue.svg)](https://hub.docker.com/r/ruvnet/wifi-densepose)
+[![Tests: 2,195](https://img.shields.io/badge/tests-2195-brightgreen.svg)](https://github.com/ruvnet/wifi-densepose)
+[![Docker: ~40 MB](https://img.shields.io/badge/docker-~40MB-blue.svg)](https://hub.docker.com/r/ruvnet/wifi-densepose)
 [![Vital Signs](https://img.shields.io/badge/vital%20signs-breathing%20%2B%20heartbeat-red.svg)](#vital-sign-detection)
 [![ESP32 Ready](https://img.shields.io/badge/ESP32--S3-CSI%20streaming-purple.svg)](#esp32-s3-hardware-pipeline)
 [![crates.io](https://img.shields.io/crates/v/wifi-densepose-ruvector.svg)](https://crates.io/crates/wifi-densepose-ruvector)
@@ -41,6 +41,11 @@ docker run -p 3000:3000 ruvnet/wifi-densepose:latest
 >
 > No hardware? Verify the signal processing pipeline with the deterministic reference signal: `python v1/data/proof/verify.py`
 
+> [!WARNING]
+> **Simulation-first: sensing currently runs on simulated CSI data, not live hardware.** As of the 2026-07-03 closeout, **no real WiFi-CSI hardware adapter is implemented** — the ESP32, Intel 5300, Atheros, UDP and PCAP adapters, and the PicoScenes CSI parser all return "not yet implemented". Only `generate_simulated_csi()` produces data. The hardware options table above describes the *intended* capture path; the build does not yet ingest live CSI.
+>
+> Likewise, the neural inference layer is **rule-based, not a trained model**: `NeuralAdapter::load_models()` does not load a network, and breathing/heart-rate classification falls back to hand-written heuristics. RVF model export writes placeholder (non-trained) weights, and RVF signed-module capability flags are declared but not verified on load. When any of these degraded paths engage, the sensing server emits an unmissable `WARN`: `RuView: SIMULATED CSI DATA / rule-based heuristic inference in use — not hardware, not NN`. Hardware validation and neural inference are future work; the earlier "hardware-validated on ESP32-S3" ADR claims have been withdrawn pending an in-repo measurement artifact.
+
 ---
 
 ## 📖 Documentation
@@ -50,7 +55,7 @@ docker run -p 3000:3000 ruvnet/wifi-densepose:latest
 | [User Guide](docs/user-guide.md) | Step-by-step guide: installation, first run, API usage, hardware setup, training |
 | [WiFi-Mat User Guide](docs/wifi-mat-user-guide.md) | Disaster response module: search & rescue, START triage |
 | [Build Guide](docs/build-guide.md) | Building from source (Rust and Python) |
-| [Architecture Decisions](docs/adr/) | 41 ADRs covering signal processing, training, hardware, security, domain generalization, multistatic sensing, CRV signal-line integration, edge intelligence |
+| [Architecture Decisions](docs/adr/) | 42 ADRs covering signal processing, training, hardware, security, domain generalization, multistatic sensing, CRV signal-line integration, edge intelligence |
 | [DDD Domain Model](docs/ddd/ruvsense-domain-model.md) | RuvSense bounded contexts, aggregates, domain events, and ubiquitous language |
 
 ---
@@ -97,7 +102,7 @@ Fast enough for real-time use, small enough for edge devices, simple enough for 
 | | Feature | What It Means |
 |---|---------|---------------|
 | ⚡ | **Real-Time** | Analyzes WiFi signals in under 100 microseconds per frame — fast enough for live monitoring |
-| 🦀 | **810x Faster** | Complete Rust rewrite: 54,000 frames/sec pipeline, 132 MB Docker image, 1,031+ tests |
+| 🦀 | **810x Faster** | Complete Rust rewrite: 54,000 frames/sec pipeline, ~40 MB Docker image, 2,195 tests |
 | 🐳 | **One-Command Setup** | `docker pull ruvnet/wifi-densepose:latest` — live sensing in 30 seconds, no toolchain needed |
 | 📦 | **Portable Models** | Trained models package into a single `.rvf` file — runs on edge, cloud, or browser (WASM) |
 
@@ -218,7 +223,7 @@ These scenarios exploit WiFi's ability to penetrate solid materials — concrete
 
 ### Edge Intelligence ([ADR-041](docs/adr/ADR-041-wasm-module-collection.md))
 
-Small programs that run directly on the ESP32 sensor — no internet needed, no cloud fees, instant response. Each module is a tiny WASM file (5-30 KB) that you upload to the device over-the-air. It reads WiFi signal data and makes decisions locally in under 10 ms. [ADR-041](docs/adr/ADR-041-wasm-module-collection.md) defines 60 modules across 13 categories — all 60 are implemented with 609 tests passing.
+Small programs that run directly on the ESP32 sensor — no internet needed, no cloud fees, instant response. Each module is a tiny WASM file (5-30 KB) that you upload to the device over-the-air. It reads WiFi signal data and makes decisions locally in under 10 ms. [ADR-041](docs/adr/ADR-041-wasm-module-collection.md) defines 60 modules across 13 categories — all 60 are implemented with 632 tests (grep-measured `#[test]` functions; this `wifi-densepose-wasm-edge` crate is **excluded** from `cargo test --workspace` — run its suite with `cd crates/wifi-densepose-wasm-edge && cargo test --features std`).
 
 | | Category | Examples |
 |---|----------|---------|
@@ -241,7 +246,7 @@ All implemented modules are `no_std` Rust, share a [common utility library](rust
 <details id="edge-module-list">
 <summary><strong>🧩 Edge Intelligence — <a href="docs/edge-modules/README.md">All 65 Modules Implemented</a></strong> (ADR-041 complete)</summary>
 
-All 60 modules are implemented, tested (609 tests passing), and ready to deploy. They compile to `wasm32-unknown-unknown`, run on ESP32-S3 via WASM3, and share a [common utility library](rust-port/wifi-densepose-rs/crates/wifi-densepose-wasm-edge/src/vendor_common.rs). Source: [`crates/wifi-densepose-wasm-edge/src/`](rust-port/wifi-densepose-rs/crates/wifi-densepose-wasm-edge/src/)
+All 60 modules are implemented and tested (632 tests, grep-measured), and ready to deploy. **Note:** this crate (`wifi-densepose-wasm-edge`) is excluded from the workspace, so `cargo test --workspace` does **not** run these 632 tests — run them with `cd crates/wifi-densepose-wasm-edge && cargo test --features std`. They compile to `wasm32-unknown-unknown`, run on ESP32-S3 via WASM3, and share a [common utility library](rust-port/wifi-densepose-rs/crates/wifi-densepose-wasm-edge/src/vendor_common.rs). Source: [`crates/wifi-densepose-wasm-edge/src/`](rust-port/wifi-densepose-rs/crates/wifi-densepose-wasm-edge/src/)
 
 **Core modules** (ADR-040 flagship + early implementations):
 
@@ -530,7 +535,7 @@ pip install wifi-densepose[all]   # All optional deps
 <summary><strong>Docker</strong> — Pre-built images, no toolchain needed</summary>
 
 ```bash
-# Rust sensing server (132 MB — recommended)
+# Rust sensing server (~40 MB — recommended)
 docker pull ruvnet/wifi-densepose:latest
 docker run -p 3000:3000 -p 3001:3001 -p 5005:5005/udp ruvnet/wifi-densepose:latest
 
@@ -547,7 +552,7 @@ docker run --rm -v $(pwd):/out ruvnet/wifi-densepose:latest --export-rvf /out/mo
 
 | Image | Tag | Size | Ports |
 |-------|-----|------|-------|
-| `ruvnet/wifi-densepose` | `latest`, `rust` | 132 MB | 3000 (REST), 3001 (WS), 5005/udp (ESP32) |
+| `ruvnet/wifi-densepose` | `latest`, `rust` | ~40 MB | 3000 (REST), 3001 (WS), 5005/udp (ESP32) |
 | `ruvnet/wifi-densepose` | `python` | 569 MB | 8765 (WS), 8080 (UI) |
 
 </details>
@@ -568,7 +573,7 @@ docker run --rm -v $(pwd):/out ruvnet/wifi-densepose:latest --export-rvf /out/mo
 <details>
 <summary><strong>Rust Crates</strong> — Individual crates on crates.io</summary>
 
-The Rust workspace consists of 15 crates, all published to [crates.io](https://crates.io/):
+The Rust workspace consists of 15 published crates, plus the workspace-excluded `wifi-densepose-wasm-edge` edge crate. **Note:** three of the published crates — `wifi-densepose-api`, `wifi-densepose-config`, and `wifi-densepose-db` — are currently one-line placeholder stubs with **no functionality** (each `src/lib.rs` is a single doc comment). They are published to reserve the crate names, not because a REST API / config / database layer exists yet.
 
 ```bash
 # Add individual crates to your Cargo.toml
@@ -597,9 +602,9 @@ cargo add wifi-densepose-ruvector   # RuVector v2.0.4 integration layer (ADR-017
 | [`wifi-densepose-wasm`](https://crates.io/crates/wifi-densepose-wasm) | WebAssembly bindings for browser deployment | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-wasm.svg)](https://crates.io/crates/wifi-densepose-wasm) |
 | [`wifi-densepose-sensing-server`](https://crates.io/crates/wifi-densepose-sensing-server) | Axum server: UDP ingestion, WebSocket broadcast | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-sensing-server.svg)](https://crates.io/crates/wifi-densepose-sensing-server) |
 | [`wifi-densepose-cli`](https://crates.io/crates/wifi-densepose-cli) | Command-line tool for MAT disaster scanning | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-cli.svg)](https://crates.io/crates/wifi-densepose-cli) |
-| [`wifi-densepose-api`](https://crates.io/crates/wifi-densepose-api) | REST + WebSocket API layer | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-api.svg)](https://crates.io/crates/wifi-densepose-api) |
-| [`wifi-densepose-config`](https://crates.io/crates/wifi-densepose-config) | Configuration management | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-config.svg)](https://crates.io/crates/wifi-densepose-config) |
-| [`wifi-densepose-db`](https://crates.io/crates/wifi-densepose-db) | Database persistence (PostgreSQL, SQLite, Redis) | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-db.svg)](https://crates.io/crates/wifi-densepose-db) |
+| [`wifi-densepose-api`](https://crates.io/crates/wifi-densepose-api) | REST + WebSocket API layer — **stub (no code yet; one-line placeholder)** | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-api.svg)](https://crates.io/crates/wifi-densepose-api) |
+| [`wifi-densepose-config`](https://crates.io/crates/wifi-densepose-config) | Configuration management — **stub (no code yet; one-line placeholder)** | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-config.svg)](https://crates.io/crates/wifi-densepose-config) |
+| [`wifi-densepose-db`](https://crates.io/crates/wifi-densepose-db) | Database persistence (PostgreSQL, SQLite, Redis) — **stub (no code yet; one-line placeholder)** | -- | [![crates.io](https://img.shields.io/crates/v/wifi-densepose-db.svg)](https://crates.io/crates/wifi-densepose-db) |
 
 All crates integrate with [RuVector v2.0.4](https://github.com/ruvnet/ruvector) — see [AI Backbone](#ai-backbone-ruvector) below.
 
@@ -721,14 +726,14 @@ The Rust sensing server is the primary interface, offering a comprehensive CLI w
 </details>
 
 <details>
-<summary><strong>⚙️ Development & Testing</strong> — 542+ tests, CI, deployment</summary>
+<summary><strong>⚙️ Development & Testing</strong> — 2,195 tests, deployment</summary>
 
-The project maintains 542+ pure-Rust tests across 7 crate suites with zero mocks — every test runs against real algorithm implementations. Hardware-free simulation mode (`--source simulate`) enables full-stack testing without physical devices. Docker images are published on Docker Hub for zero-setup deployment.
+The project has 2,195 `#[test]` functions (grep-measured); `cargo test --workspace` runs ~1,563 of them across the 15 workspace members, and the 632-test `wifi-densepose-wasm-edge` edge crate is excluded from that command (run it separately — see Testing). Most tests run against real algorithm implementations under hardware-free simulation, but this is **not** "zero mocks": `wifi-densepose-nn` uses a hand-written `MockBackend`, and `mockall`/`wiremock` are declared workspace dependencies. Sensing itself currently runs on **simulated CSI data** — no real WiFi-CSI hardware adapter is implemented (see the Simulation-First disclosure). Docker images are published on Docker Hub for zero-setup deployment.
 
 | Section | Description | Docs |
 |---------|-------------|------|
-| [Testing](#testing) | 7 test suites: sensing-server (229), signal (83), mat (139), wifiscan (91), RVF (16), vitals (18) | — |
-| [Deployment](#deployment) | Docker images (132 MB Rust / 569 MB Python), docker-compose, env vars | — |
+| [Testing](#testing) | grep-measured `#[test]` counts: signal (354), train (299), sensing-server (250), mat (159), wifiscan (150), ruvector (103), hardware (100), vitals (52); + excluded edge crate (632) | — |
+| [Deployment](#deployment) | Docker images (~40 MB Rust / 569 MB Python), docker-compose, env vars | — |
 | [Contributing](#contributing) | Fork → branch → test → PR workflow, Rust and Python dev setup | — |
 
 </details>
@@ -1051,8 +1056,8 @@ See [firmware/esp32-csi-node/README.md](firmware/esp32-csi-node/README.md), [ADR
 | Resource | Python (v1) | Rust (v2) |
 |----------|-------------|-----------|
 | Memory | ~500 MB | ~100 MB |
-| Docker Image | 569 MB | 132 MB |
-| Tests | 41 | 542+ |
+| Docker Image | 569 MB | ~40 MB |
+| Tests | 41 | 2,195 (1,563 via `cargo test --workspace` + 632 excluded edge) |
 | WASM Support | No | Yes |
 
 ```bash
@@ -1484,7 +1489,7 @@ graph TB
         E3["Node 3<br/><small>Bedroom</small>"]
     end
 
-    subgraph SERVER ["Server (Rust · 132 MB Docker)"]
+    subgraph SERVER ["Server (Rust · ~40 MB Docker)"]
         SENSE["Sensing Server<br/><small>:3000 REST · :3001 WS · :5005 UDP</small>"]
         RVF["RVF Model<br/><small>Progressive 3-layer load</small>"]
         STORE["Time-Series Store<br/><small>In-memory ring buffer</small>"]
@@ -1637,14 +1642,20 @@ wifi-densepose tasks list               # List background tasks
 ## 🧪 Testing
 
 <details>
-<summary><strong>542+ tests across 7 suites</strong> — zero mocks, hardware-free simulation</summary>
+<summary><strong>2,195 tests total (grep-measured)</strong> — hardware-free simulation, not "zero mocks"</summary>
+
+> Counts below are grep-measured (`grep -rc '#[test]'`, excluding `/target/`) as of the 2026-07-03 closeout — not hand-maintained. `cargo test --workspace` runs the 15 workspace members (~1,563 tests). The `wifi-densepose-wasm-edge` "Edge Intelligence" crate (632 tests) is **excluded from the workspace** (`no_std`, targets `wasm32-unknown-unknown`) and is **not** run by the workspace command — run it separately (see below). This is **not** a "zero mocks" suite: `wifi-densepose-nn` uses a hand-written `MockBackend`, and `mockall`/`wiremock` are declared workspace dependencies.
 
 ```bash
-# Rust tests (primary — 542+ tests)
+# Rust workspace tests (~1,563 tests across 15 crates)
 cd rust-port/wifi-densepose-rs
 cargo test --workspace
 
-# Sensing server tests (229 tests)
+# Edge Intelligence suite (632 tests) — EXCLUDED from the workspace,
+# run it on its own (needs the `std` feature to test on host):
+cd crates/wifi-densepose-wasm-edge && cargo test --features std
+
+# Single crate, e.g. sensing server (250 tests)
 cargo test -p wifi-densepose-sensing-server
 
 # Vital sign benchmark
@@ -1653,19 +1664,26 @@ cargo test -p wifi-densepose-sensing-server
 # Python tests
 python -m pytest v1/tests/ -v
 
-# Pipeline verification (no hardware needed)
+# Pipeline verification (simulated CSI data — no hardware needed)
 ./verify
 ```
 
-| Suite | Tests | What It Covers |
-|-------|-------|----------------|
-| sensing-server lib | 147 | Graph transformer, trainer, SONA, sparse inference, RVF |
-| sensing-server bin | 48 | CLI integration, WebSocket, REST API |
-| RVF integration | 16 | Container build, read, progressive load |
-| Vital signs integration | 18 | FFT detection, breathing, heartbeat |
-| wifi-densepose-signal | 83 | SOTA algorithms, Doppler, Fresnel |
-| wifi-densepose-mat | 139 | Disaster response, triage, localization |
-| wifi-densepose-wifiscan | 91 | 8-stage RSSI pipeline |
+| Crate | Tests (grep-measured) | What It Covers |
+|-------|-----------------------|----------------|
+| wifi-densepose-wasm-edge* | 632 | Edge-intelligence WASM modules (*excluded from `--workspace`) |
+| wifi-densepose-signal | 354 | SOTA algorithms, Doppler, Fresnel |
+| wifi-densepose-train | 299 | Training pipeline, datasets |
+| wifi-densepose-sensing-server | 250 | Graph transformer, trainer, SONA, sparse inference, RVF, WebSocket/REST |
+| wifi-densepose-mat | 159 | Disaster response, triage, localisation |
+| wifi-densepose-wifiscan | 150 | 8-stage RSSI pipeline |
+| wifi-densepose-ruvector | 103 | RuVector integration, CRV pipeline |
+| wifi-densepose-hardware | 100 | ESP32 frame parsing, aggregator |
+| wifi-densepose-vitals | 52 | Breathing, heart rate, anomaly, store |
+| wifi-densepose-core | 28 | Foundation types |
+| wifi-densepose-nn | 23 | Multi-backend inference harness (incl. `MockBackend`) |
+| wifi-densepose-cli | 5 | CLI |
+| wifi-densepose-{api,config,db,wasm} | 0 | api/config/db are one-line stubs; wasm has bindings, no tests |
+| **Total** | **2,195** | 1,563 under `--workspace` + 632 excluded edge suite |
 
 </details>
 
@@ -1676,8 +1694,10 @@ python -m pytest v1/tests/ -v
 <details>
 <summary><strong>Docker deployment</strong> — Production setup with docker-compose</summary>
 
+> **Image size (~40 MB)** is the Docker Hub registry-reported compressed pull size (measured 2026-07-03). `docker images` reports the larger uncompressed on-disk size (≈132 MB). Regenerate this figure from the registry API rather than hand-editing it.
+
 ```bash
-# Rust sensing server (132 MB)
+# Rust sensing server (~40 MB)
 docker pull ruvnet/wifi-densepose:latest
 docker run -p 3000:3000 -p 3001:3001 -p 5005:5005/udp ruvnet/wifi-densepose:latest
 
@@ -1717,9 +1737,9 @@ POSE_MAX_PERSONS=10              # Max tracked individuals
 | Vital sign detection | **11,665 fps** (86 µs/frame) |
 | Full CSI pipeline | **54,000 fps** (18.47 µs/frame) |
 | Motion detection | **186 ns** (~5,400x vs Python) |
-| Docker image | 132 MB |
+| Docker image | ~40 MB |
 | Memory usage | ~100 MB |
-| Test count | 542+ |
+| Test count | 2,195 (1,563 workspace + 632 excluded edge) |
 
 ### Python vs Rust
 
@@ -1799,7 +1819,7 @@ Multistatic sensing, persistent field model, and cross-viewpoint fusion — the 
 - **ADR-033 CRV signal-line sensing integration** — Architecture decision record for the 6-stage CRV pipeline mapping to ruvector components
 - **Temporal gesture matching** — `midstreamer-temporal-compare` DTW/LCS/edit-distance gesture classification with quantized feature comparison
 - **Attractor drift analysis** — `midstreamer-attractor` Takens' theorem phase-space embedding with Lyapunov exponent regime detection (Stable/Periodic/Chaotic)
-- **v0.3.0 published** — All 15 workspace crates published to [crates.io](https://crates.io/crates/wifi-densepose-core) with updated dependencies
+- **v0.3.0 published** — All 15 workspace crates published to [crates.io](https://crates.io/crates/wifi-densepose-core) with updated dependencies (note: `api`/`config`/`db` are one-line placeholder stubs — see the crate table)
 - **28,000+ lines of new Rust code** across 26 modules with 400+ tests
 - **Security hardened** — Bounded buffers, NaN guards, no panics in public APIs, input validation at all boundaries
 
@@ -1810,12 +1830,12 @@ Major release: AETHER contrastive embedding model, AI signal processing backbone
 - **Project AETHER (ADR-024)** — Self-supervised contrastive learning for WiFi CSI fingerprinting, similarity search, and anomaly detection; 55 KB model fits on ESP32
 - **AI Backbone (`wifi-densepose-ruvector`)** — 7 RuVector integration points replacing hand-tuned thresholds with attention, graph algorithms, and smart compression; [published to crates.io](https://crates.io/crates/wifi-densepose-ruvector)
 - **Cross-platform RSSI adapters** — macOS CoreWLAN and Linux `iw` Rust adapters with `#[cfg(target_os)]` gating (ADR-025)
-- **Docker images published** — `ruvnet/wifi-densepose:latest` (132 MB Rust) and `:python` (569 MB)
+- **Docker images published** — `ruvnet/wifi-densepose:latest` (~40 MB Rust) and `:python` (569 MB)
 - **Project MERIDIAN (ADR-027)** — Cross-environment domain generalization: gradient reversal, geometry-conditioned FiLM, virtual domain augmentation, contrastive test-time training; zero-shot room transfer
 - **10-phase DensePose training pipeline (ADR-023/027)** — Graph transformer, 6-term composite loss, SONA adaptation, RVF packaging, hardware normalization, domain-adversarial training
 - **Vital sign detection (ADR-021)** — FFT-based breathing (6-30 BPM) and heartbeat (40-120 BPM), 11,665 fps
 - **WiFi scan domain layer (ADR-022/025)** — 8-stage signal intelligence pipeline for Windows, macOS, and Linux
-- **700+ Rust tests** — All passing, zero mocks
+- **2,195 `#[test]` functions** — hardware-free simulation (not "zero mocks" — see Testing)
 
 ### v2.0.0 — 2026-02-28
 
