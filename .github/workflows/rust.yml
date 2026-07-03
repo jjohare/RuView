@@ -1,0 +1,106 @@
+name: Rust CI
+
+# Closeout (2026-07-03) FINISH F1: the rust-port workspace
+# (rust-port/wifi-densepose-rs) is documented in the README as the "primary"
+# implementation, yet no workflow built, tested or linted a single line of its
+# ~150K-line, 16-crate Rust surface — every existing workflow targeted the
+# Python code, the Docker image or the ESP32 firmware. This workflow adds the
+# missing Rust gate: build + test + clippy on the workspace, plus an explicit
+# job for the flagship wasm-edge crate (632 tests) that is excluded from
+# `cargo test --workspace` and therefore never ran under the workspace command.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'rust-port/**'
+      - '.github/workflows/rust.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'rust-port/**'
+      - '.github/workflows/rust.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: rust-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+defaults:
+  run:
+    working-directory: rust-port/wifi-densepose-rs
+
+jobs:
+  # Primary gate: build, lint and test every workspace member.
+  workspace:
+    name: Workspace (build + clippy + test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config libssl-dev cmake clang protobuf-compiler
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-port/wifi-densepose-rs -> target
+          key: workspace
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Build workspace
+        run: cargo build --workspace
+
+      - name: Test workspace
+        run: cargo test --workspace
+        env:
+          RUST_TEST_THREADS: 2
+
+  # The flagship "Edge Intelligence" crate is EXCLUDED from the workspace
+  # (rust-port/wifi-densepose-rs/Cargo.toml, ADR-040) so `cargo test --workspace`
+  # never touches it. It is no_std by default; the `std` feature enables the host
+  # test harness for its 632 tests. Run it explicitly here, and verify it still
+  # compiles for its real wasm32 target.
+  wasm-edge:
+    name: wasm-edge crate (632 tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-port/wifi-densepose-rs -> target
+          key: wasm-edge
+
+      - name: Test wasm-edge (std feature, host harness)
+        run: cargo test --manifest-path crates/wifi-densepose-wasm-edge/Cargo.toml --features std
+
+      - name: Build wasm-edge for wasm32 target
+        run: cargo build --manifest-path crates/wifi-densepose-wasm-edge/Cargo.toml --target wasm32-unknown-unknown --release
