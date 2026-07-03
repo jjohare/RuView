@@ -2279,55 +2279,20 @@ async fn main() {
 
     // Handle --export-rvf mode: build an RVF container package and exit
     if let Some(ref rvf_path) = args.export_rvf {
-        eprintln!("Exporting RVF container package...");
-        use rvf_pipeline::RvfModelBuilder;
-
-        let mut builder = RvfModelBuilder::new("wifi-densepose", "1.0.0");
-
-        // Vital sign config (default breathing 0.1-0.5 Hz, heartbeat 0.8-2.0 Hz)
-        builder.set_vital_config(0.1, 0.5, 0.8, 2.0);
-
-        // Model profile (input/output spec)
-        builder.set_model_profile(
-            "56-subcarrier CSI amplitude/phase @ 10-100 Hz",
-            "17 COCO keypoints + body part UV + vital signs",
-            "ESP32-S3 or Windows WiFi RSSI, Rust 1.85+",
+        // Honesty (closeout 2026-07-03): RVF *model* export is unimplemented.
+        // No trained-weight source is wired into this path — it previously wrote
+        // sine-wave placeholder weights, producing a non-functional model that
+        // could not perform pose estimation. Refuse to write placeholder weights
+        // rather than emit a fake model artifact.
+        eprintln!(
+            "Error: RVF model export is unimplemented — refusing to write placeholder weights.\n\
+             No trained-weight source is wired into --export-rvf, so any exported .rvf would contain\n\
+             synthetic (sine-wave) parameters, not a trained model. Wire the progressive weight loader\n\
+             into the exporter before using this command (requested output: {}).\n\
+             See the Simulation-First disclosure in README.",
+            rvf_path.display()
         );
-
-        // Placeholder weights (17 keypoints × 56 subcarriers × 3 dims = 2856 params)
-        let placeholder_weights: Vec<f32> = (0..2856).map(|i| (i as f32 * 0.001).sin()).collect();
-        builder.set_weights(&placeholder_weights);
-
-        // Training provenance
-        builder.set_training_proof(
-            "wifi-densepose-rs-v1.0.0",
-            serde_json::json!({
-                "pipeline": "ADR-023 8-phase",
-                "test_count": 229,
-                "benchmark_fps": 9520,
-                "framework": "wifi-densepose-rs",
-            }),
-        );
-
-        // SONA default environment profile
-        let default_lora: Vec<f32> = vec![0.0; 64];
-        builder.add_sona_profile("default", &default_lora, &default_lora);
-
-        match builder.build() {
-            Ok(rvf_bytes) => {
-                if let Err(e) = std::fs::write(rvf_path, &rvf_bytes) {
-                    eprintln!("Error writing RVF: {e}");
-                    std::process::exit(1);
-                }
-                eprintln!("Wrote {} bytes to {}", rvf_bytes.len(), rvf_path.display());
-                eprintln!("RVF container exported successfully.");
-            }
-            Err(e) => {
-                eprintln!("Error building RVF: {e}");
-                std::process::exit(1);
-            }
-        }
-        return;
+        std::process::exit(1);
     }
 
     // Handle --pretrain mode: self-supervised contrastive pretraining (ADR-024)
@@ -2918,20 +2883,26 @@ async fn main() {
             "total_ticks": s.tick,
             "total_detections": s.total_detections,
             "uptime_secs": s.start_time.elapsed().as_secs(),
+            "weights_captured": false,
+            "weights_note": "runtime weight export unimplemented (closeout 2026-07-03); empty weight segment — this is a state/metadata snapshot, not a trained model",
         }));
         builder.add_vital_config(&VitalSignConfig::default());
-        // Save transformer weights if a model is loaded, otherwise empty
-        let weights: Vec<f32> = if s.model_loaded {
-            // If we loaded via --model, the progressive loader has the weights
-            // For now, save runtime state placeholder
-            let tf = graph_transformer::CsiToPoseTransformer::new(Default::default());
-            tf.flatten_weights()
-        } else {
-            Vec::new()
-        };
+        // Honesty (closeout 2026-07-03): the runtime does not expose the loaded
+        // transformer weights here, and fabricating a fresh untrained
+        // transformer's default weights would write a non-functional model.
+        // Save an empty weight segment and record that fact rather than
+        // pretending trained weights were captured.
+        if s.model_loaded {
+            warn!(
+                "RuView: RVF runtime save cannot capture the loaded model weights \
+                 (runtime weight export is unimplemented) — writing an empty weight segment. \
+                 The saved .rvf is a state/metadata snapshot, not a trained model."
+            );
+        }
+        let weights: Vec<f32> = Vec::new();
         builder.add_weights(&weights);
         match builder.write_to_file(save_path) {
-            Ok(()) => info!("  RVF saved ({} weight params)", weights.len()),
+            Ok(()) => info!("  RVF saved (state/metadata snapshot; 0 weight params — see weights_note)"),
             Err(e) => error!("  Failed to save RVF: {e}"),
         }
     }
