@@ -196,7 +196,11 @@ pub mod builder {
 
         out.write_all(wasm_data).unwrap();
 
-        // Placeholder signature (zeroed — sign externally).
+        // Placeholder signature: zeroed. Honesty (closeout 2026-07-03): this
+        // builder writes an all-zero signature and there is NO verifier for this
+        // format — modules must be signed externally, and no loader checks the
+        // signature or gates the CAP_* capability flags. Treat unsigned/zero-sig
+        // modules as UNTRUSTED. See docs/rvf-format.md.
         out.write_all(&[0u8; RVF_SIGNATURE_LEN]).unwrap();
 
         out

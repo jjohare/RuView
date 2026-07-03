@@ -461,7 +461,10 @@ impl RvfModelBuilder {
             }));
         }
 
-        // 10) Crypto placeholder (empty signature)
+        // 10) Crypto segment: empty placeholder (no signature). Honesty
+        // (closeout 2026-07-03): the SEG_CRYPTO segment is written empty and no
+        // loader verifies it — RVF signed-module verification is unenforced.
+        // See docs/rvf-format.md.
         rvf.add_raw_segment(SEG_CRYPTO, &[]);
 
         Ok(rvf.build())

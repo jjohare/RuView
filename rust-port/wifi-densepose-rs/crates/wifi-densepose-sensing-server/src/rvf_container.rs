@@ -497,6 +497,23 @@ impl RvfReader {
             offset += align_up(raw);
         }
 
+        // Honesty (closeout 2026-07-03): this reader validates only structural
+        // integrity (segment magic/version and CRC32 content hash). It performs
+        // NO cryptographic signature verification and does NOT enforce the RVF
+        // capability flags (CAP_READ_PHASE, CAP_READ_VITALS, ...). RVF modules
+        // are therefore loaded on trust. Emit one unmissable WARN so operators
+        // know signed-module verification is unenforced. See docs/rvf-format.md.
+        {
+            static RVF_UNVERIFIED_WARN: std::sync::Once = std::sync::Once::new();
+            RVF_UNVERIFIED_WARN.call_once(|| {
+                tracing::warn!(
+                    "RuView: RVF signed-module verification is UNENFORCED — loaded modules are not \
+                     signature-verified and capability flags are not gated (integrity is CRC32 only, \
+                     not cryptographic). Do not load RVF modules by trust. See docs/rvf-format.md."
+                );
+            });
+        }
+
         Ok(Self {
             segments,
             raw_size: data.len(),
