@@ -29,39 +29,63 @@ impl NeuralAdapter {
         Self::new(false)
     }
 
-    /// Load neural network models
-    pub fn load_models(&mut self, _model_path: &str) -> Result<(), AdapterError> {
-        // In production, this would load ONNX models using wifi-densepose-nn
-        // For now, mark as loaded for simulation
-        self.models_loaded = true;
+    /// Load neural network models.
+    ///
+    /// Honesty note (closeout 2026-07-03): this adapter has **no wired neural
+    /// backend**. It must not fake a successful model load. It records that no
+    /// model was loaded (so `models_loaded` stays `false` and inference honestly
+    /// takes the rule-based fallback path) and logs an unmissable WARN describing
+    /// what actually happened. It returns `Ok(())` so existing callers are not
+    /// broken, but no trained model is ever loaded here.
+    pub fn load_models(&mut self, model_path: &str) -> Result<(), AdapterError> {
+        self.models_loaded = false;
+        tracing::warn!(
+            model_path = %model_path,
+            "RuView: SIMULATED CSI DATA / rule-based heuristic inference in use — not hardware, not NN. \
+             NeuralAdapter::load_models found no wired neural backend; vital-signs classification will \
+             use rule-based heuristics, not a trained model. See the Simulation-First disclosure in README."
+        );
         Ok(())
     }
 
-    /// Classify breathing pattern using neural network
+    /// Returns whether a trained neural model is loaded. Currently always
+    /// `false`: no neural backend is wired (see `load_models`), so vital-signs
+    /// inference runs on rule-based heuristics.
+    pub fn is_loaded(&self) -> bool {
+        self.models_loaded
+    }
+
+    /// Emit a single, unmissable WARN the first time rule-based (heuristic)
+    /// vital-signs inference is used in place of a neural model.
+    fn note_rule_based_fallback() {
+        static RULE_BASED_WARN: std::sync::Once = std::sync::Once::new();
+        RULE_BASED_WARN.call_once(|| {
+            tracing::warn!(
+                "RuView: SIMULATED CSI DATA / rule-based heuristic inference in use — not hardware, not NN. \
+                 NeuralAdapter is classifying vital signs with hand-written heuristics, not a trained network."
+            );
+        });
+    }
+
+    /// Classify breathing pattern. No neural backend is wired, so this always
+    /// uses the rule-based heuristic path (see `load_models`).
     pub fn classify_breathing(
         &self,
         features: &VitalFeatures,
     ) -> Result<Option<BreathingPattern>, AdapterError> {
-        if !self.models_loaded {
-            // Fall back to rule-based classification
-            return Ok(self.classify_breathing_rules(features));
-        }
-
-        // In production, this would run ONNX inference
-        // For now, use rule-based approach
+        // No trained model is ever loaded; classification is rule-based.
+        Self::note_rule_based_fallback();
         Ok(self.classify_breathing_rules(features))
     }
 
-    /// Classify heartbeat using neural network
+    /// Classify heartbeat. No neural backend is wired, so this always uses the
+    /// rule-based heuristic path (see `load_models`).
     pub fn classify_heartbeat(
         &self,
         features: &VitalFeatures,
     ) -> Result<Option<HeartbeatSignature>, AdapterError> {
-        if !self.models_loaded {
-            return Ok(self.classify_heartbeat_rules(features));
-        }
-
-        // In production, run ONNX inference
+        // No trained model is ever loaded; classification is rule-based.
+        Self::note_rule_based_fallback();
         Ok(self.classify_heartbeat_rules(features))
     }
 

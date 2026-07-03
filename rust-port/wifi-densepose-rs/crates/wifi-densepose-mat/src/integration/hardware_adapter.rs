@@ -799,6 +799,19 @@ impl HardwareAdapter {
     async fn generate_simulated_csi(config: &HardwareConfig) -> Result<CsiReadings, AdapterError> {
         use std::f64::consts::PI;
 
+        // Honesty (closeout 2026-07-03): emit one unmissable WARN when the
+        // simulated-CSI source engages, so operators cannot mistake synthetic
+        // data for live hardware capture. No real WiFi-CSI hardware adapter is
+        // implemented (ESP32/Intel5300/Atheros/UDP/PCAP all return errors).
+        static SIMULATED_CSI_WARN: std::sync::Once = std::sync::Once::new();
+        SIMULATED_CSI_WARN.call_once(|| {
+            tracing::warn!(
+                "RuView: SIMULATED CSI DATA / rule-based heuristic inference in use — not hardware, not NN. \
+                 DeviceType::Simulated is active: generate_simulated_csi() is producing synthetic data. \
+                 No real WiFi-CSI hardware adapter is implemented. See the Simulation-First disclosure in README."
+            );
+        });
+
         // Simulate packet rate
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
 
