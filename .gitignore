@@ -217,3 +217,34 @@ v1/src/sensing/mac_wifi
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Machine-local agent state and credentials (public fork hygiene)
+# Keep shared agent definitions, helpers and config templates versioned.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/checkpoints/
+.claude/sessions/
+.claude/worktrees/
+.claude/memory.db*
+.claude-flow/daemon-state.json
+.claude-flow/daemon.pid
+.claude-flow/.trend-cache.json
+.claude-flow/metrics/
+.claude-flow/sessions/
+.claude-flow/logs/
+.claude-flow/data/
+.claude-flow/security/audit-status.json
+.agentic-qe/
+.hive-mind/
+.swarm/state.json
+.swarm/memory.db*
+.swarm/hnsw.index
+.swarm/hnsw.metadata.json
+.mcp.json
+ruvector.db*
+agentdb.rvf*
+.credentials/
+.env.*
+!.env.example
+!.env.sample
+!.env.template
